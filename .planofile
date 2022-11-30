@@ -17,34 +17,33 @@
 # under the License.
 #
 
-import importlib as _importlib
-
-_verbose_arg = CommandArgument("verbose", help="Print detailed logging to the console")
-
-@command(args=(CommandArgument("include", help="Run tests with names matching PATTERN", metavar="PATTERN"),
-               CommandArgument("exclude", help="Do not run tests with names matching PATTERN", metavar="PATTERN"),
-               CommandArgument("unskip", help="Run skipped tests matching PATTERN", metavar="PATTERN"),
-               CommandArgument("list_", help="Print the test names and exit", display_name="list"),
-               _verbose_arg))
-def test_(include="*", exclude=None, unskip=None, list_=False, verbose=False, clean_=False):
+@command(passthrough=True)
+def test_(passthrough_args=[]):
     clean()
 
     with working_env(PYTHONPATH=get_absolute_path("python")):
-        module = _importlib.import_module("bullseye.tests")
+        run(["plano-test", "-m", "bullseye.tests"] + passthrough_args)
 
-        assert module
+@command
+def coverage():
+    """
+    Analyze test coverage
+    """
 
-        args = list()
+    check_program("coverage", "Install the Python coverage package")
 
-        if list_:
-            print_tests(module)
-            return
+    clean()
 
-        exclude = nvl(exclude, ())
-        unskip = nvl(unskip, ())
+    with working_env(PYTHONPATH=get_absolute_path("python")):
+        run(f"coverage run --include python/\* {which('plano-test')} -m bullseye.tests", stash=True)
 
-        run_tests(module, include=include, exclude=exclude, unskip=unskip, verbose=verbose)
+    run("coverage report")
+    run("coverage html")
+
+    print("OUTPUT:", get_file_url("htmlcov/index.html"))
 
 @command
 def clean():
     remove(find(".", "__pycache__"))
+    remove(".coverage")
+    remove("htmlcov")
