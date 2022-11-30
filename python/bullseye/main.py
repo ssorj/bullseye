@@ -170,7 +170,7 @@ def coverage():
     check_project()
     check_program("coverage", "Install the Python coverage package")
 
-    run(f"coverage run --include {project.source_dir}/\* ./plano test", stash=True)
+    run(f"coverage run --include {project.source_dir}/\* {which('plano')} test", stash=True)
     run("coverage report")
     run("coverage html")
 

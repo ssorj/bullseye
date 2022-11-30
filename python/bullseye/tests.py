@@ -17,7 +17,8 @@
 # under the License.
 #
 
-from bullseye import *
+from .main import *
+from .main import _StringCatalog
 from plano.commands import *
 
 test_project_dir = get_absolute_path("test-project")
@@ -46,8 +47,14 @@ def project_operations():
         assert output == "XYX", output
 
 @test
+def string_catalog():
+    catalog = _StringCatalog(join(get_parent_dir(__file__), "main.strings"))
+
+    print(catalog)
+
+@test
 def build_command():
-    if WINDOWS:
+    if WINDOWS: # pragma: nocover
         raise PlanoTestSkipped("Not ready for Windows")
 
     with test_project():
@@ -91,8 +98,18 @@ def test_command():
         run_plano("test", "--clean")
 
 @test
+def coverage_command():
+    with test_project():
+        run_plano("coverage")
+
+        check_file(result_file)
+
+        result = read_json(result_file)
+        assert result["tested"], result
+
+@test
 def install_command():
-    if WINDOWS:
+    if WINDOWS: # pragma: nocover
         raise PlanoTestSkipped("Not ready for Windows")
 
     with test_project():
