@@ -33,12 +33,12 @@ build:
 .PHONY: test
 test: clean build
 	python -m venv build/venv
-	. build/venv/bin/activate && pip install --force-reinstall dist/plano-*-py3-none-any.whl
-	. build/venv/bin/activate && plano-self-test
+	. build/venv/bin/activate && pip install --force-reinstall dist/bullseye-*-py3-none-any.whl
+	. build/venv/bin/activate && bullseye-self-test
 
 .PHONY: install
 install: build
-	pip install --user --force-reinstall dist/plano-*-py3-none-any.whl
+	pip install --user --force-reinstall dist/bullseye-*-py3-none-any.whl
 
 .PHONY: clean
 clean:
@@ -52,8 +52,8 @@ docs:
 .PHONY: coverage
 coverage: build
 	python -m venv build/venv
-	. build/venv/bin/activate && pip install --force-reinstall dist/plano-*-py3-none-any.whl
-	. build/venv/bin/activate && PYTHONPATH=build/venv/lib/python3.10/site-packages coverage3 run --omit /tmp/\*,\*/yaml/\* build/venv/bin/plano-self-test
+	. build/venv/bin/activate && pip install --force-reinstall dist/bullseye-*-py3-none-any.whl
+	. build/venv/bin/activate && PYTHONPATH=build/venv/lib/python3.10/site-packages coverage3 run --omit /tmp/\*,\*/yaml/\* build/venv/bin/bullseye-self-test
 	coverage3 report
 	coverage3 html
 	@echo file:${CURDIR}/htmlcov/index.html
