@@ -13,7 +13,7 @@ result_file = "build/result.json"
 
 @command(parent=build)
 def build(*args, **kwargs):
-    build.parent.function(*args, **kwargs)
+    parent(*args, **kwargs)
 
     notice("Extended building")
 
@@ -22,7 +22,7 @@ def build(*args, **kwargs):
 
 @command(parent=test_)
 def test_(*args, **kwargs):
-    test_.parent.function(*args, **kwargs)
+    parent(*args, **kwargs)
 
     notice("Extended testing")
 
@@ -35,7 +35,7 @@ def test_(*args, **kwargs):
 
 @command(parent=install)
 def install(*args, **kwargs):
-    install.parent.function(*args, **kwargs)
+    parent(*args, **kwargs)
 
     notice("Extended installing")
 

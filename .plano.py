@@ -17,6 +17,8 @@
 # under the License.
 #
 
+from plano import *
+
 @command(passthrough=True)
 def test_(passthrough_args=[]):
     clean()

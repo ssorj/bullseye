@@ -73,15 +73,11 @@ def configure_file(input_file, output_file, substitutions, quiet=False):
     return output_file
 
 _prefix_arg = CommandArgument("prefix", help="The base path for installed files", default=_default_prefix)
-_clean_arg = CommandArgument("clean_", help="Clean before starting", display_name="clean")
 _verbose_arg = CommandArgument("verbose", help="Print detailed logging to the console")
 
-@command(args=(_prefix_arg, _clean_arg))
-def build(prefix=None, clean_=False):
+@command(args=(_prefix_arg, _verbose_arg))
+def build(prefix=None, verbose=False):
     check_project()
-
-    if clean_:
-        clean()
 
     build_file = join(project.build_dir, "build.json")
     build_data = {}
@@ -141,12 +137,9 @@ def build(prefix=None, clean_=False):
                CommandArgument("exclude", help="Do not run tests with names matching PATTERN", metavar="PATTERN"),
                CommandArgument("unskip", help="Run skipped tests matching PATTERN", metavar="PATTERN"),
                CommandArgument("list_", help="Print the test names and exit", display_name="list"),
-               _verbose_arg, _clean_arg))
-def test_(include="*", exclude=None, unskip=None, list_=False, verbose=False, clean_=False):
+               _verbose_arg))
+def test_(include="*", exclude=None, unskip=None, list_=False, verbose=False):
     check_project()
-
-    if clean_:
-        clean()
 
     if not list_:
         build()
@@ -184,12 +177,11 @@ def coverage():
 
     print("OUTPUT:", get_file_url("htmlcov/index.html"))
 
-@command(args=(CommandArgument("staging_dir", help="A path prepended to installed files"),
-               _prefix_arg, _clean_arg))
-def install(staging_dir="", prefix=None, clean_=False):
+@command(args=(CommandArgument("staging_dir", help="A path prepended to installed files"), _prefix_arg, _verbose_arg))
+def install(staging_dir="", prefix=None, verbose=False):
     check_project()
 
-    build(prefix=prefix, clean_=clean_)
+    build(prefix=prefix, verbose=verbose)
 
     assert is_dir(project.build_dir), list_dir()
 
@@ -213,7 +205,6 @@ def clean():
 
     remove(project.build_dir)
     remove(find(".", "__pycache__"))
-    remove(find(".", "*.pyc"))
 
 @command(args=(CommandArgument("undo", help="Generate settings that restore the previous environment"),))
 def env(undo=False):
@@ -259,74 +250,3 @@ def env(undo=False):
     ]
 
     print("export PYTHONPATH={0}".format(join_path_var(*python_path)))
-
-@command(args=(CommandArgument("filename", help="Which file to generate"),
-               CommandArgument("stdout", help="Print to stdout instead of writing the file directly")))
-def generate(filename, stdout=False):
-    """
-    Generate standard project files
-
-    Use one of the following filenames:
-
-        .gitignore
-        LICENSE.txt
-        README.md
-        VERSION.txt
-
-    Use the special filename "all" to generate all of them.
-    """
-
-    assert project.name
-
-    project_files = _StringCatalog(__file__)
-
-    if filename == "all":
-        for name in project_files:
-            _generate_file(project_files, name, stdout)
-    else:
-        _generate_file(project_files, filename, stdout)
-
-def _generate_file(project_files, filename, stdout):
-    try:
-        content = project_files[filename]
-    except KeyError:
-        exit("File {0} is not one of the options".format(repr(filename)))
-
-    content = content.lstrip()
-    content = content.format(project_title=project.name.capitalize(), project_name=project.name)
-
-    if stdout:
-        print(content, end="")
-    else:
-        write(filename, content)
-
-class _StringCatalog(dict):
-    def __init__(self, path):
-        super(_StringCatalog, self).__init__()
-
-        self.path = "{0}.strings".format(split_extension(path)[0])
-
-        check_file(self.path)
-
-        key = None
-        out = list()
-
-        for line in read_lines(self.path):
-            line = line.rstrip()
-
-            if line.startswith("[") and line.endswith("]"):
-                if key:
-                    self[key] = "".join(out).strip() + "\n"
-
-                out = list()
-                key = line[1:-1]
-
-                continue
-
-            out.append(line)
-            out.append("\r\n")
-
-        self[key] = "".join(out).strip() + "\n"
-
-    def __repr__(self):
-        return format_repr(self)
