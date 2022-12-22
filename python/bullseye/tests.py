@@ -89,7 +89,7 @@ def test_command():
 
         run_plano("test", "--verbose")
         run_plano("test", "--list")
-        run_plano("test", "--include", "test-hello")
+        run_plano("test", "test-hello")
 
 @test
 def coverage_command():

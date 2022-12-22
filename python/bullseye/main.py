@@ -133,34 +133,16 @@ def build(prefix=None, verbose=False):
         for path in find(name):
             copy(path, join(project.build_dir, project.name, path), inside=False, symlinks=False)
 
-@command(args=(CommandArgument("include", help="Run tests with names matching PATTERN", metavar="PATTERN"),
-               CommandArgument("exclude", help="Do not run tests with names matching PATTERN", metavar="PATTERN"),
-               CommandArgument("unskip", help="Run skipped tests matching PATTERN", metavar="PATTERN"),
-               CommandArgument("list_", help="Print the test names and exit", display_name="list"),
-               _verbose_arg))
-def test_(include="*", exclude=None, unskip=None, list_=False, verbose=False):
+@command(passthrough=True)
+def test_(passthrough_args=[]):
     check_project()
 
-    if not list_:
-        build()
+    build()
 
     with project_env():
         modules = [_importlib.import_module(x) for x in project.test_modules]
 
-        if not modules: # pragma: nocover
-            notice("Test modules not found: {}".format(",".join(project.test_modules)))
-            return
-
-        args = list()
-
-        if list_:
-            print_tests(modules)
-            return
-
-        exclude = nvl(exclude, ())
-        unskip = nvl(unskip, ())
-
-        run_tests(modules, include=include, exclude=exclude, unskip=unskip, verbose=verbose)
+        PlanoTestCommand(modules).main(passthrough_args)
 
 @command
 def coverage():
@@ -205,6 +187,8 @@ def clean():
 
     remove(project.build_dir)
     remove(find(".", "__pycache__"))
+    remove(".coverage")
+    remove("htmlcov")
 
 @command(args=(CommandArgument("undo", help="Generate settings that restore the previous environment"),))
 def env(undo=False):

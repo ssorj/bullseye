@@ -20,9 +20,10 @@ def build(*args, **kwargs):
     data = {"built": True}
     write_json(result_file, data)
 
-@command(parent=test_)
-def test_(*args, **kwargs):
-    parent(*args, **kwargs)
+# XXX Consider instead inheriting the passthrough behavior from the parent
+@command(parent=test_, passthrough=True)
+def test_(*args, passthrough_args=[], **kwargs):
+    parent(*args, passthrough_args=passthrough_args, **kwargs)
 
     notice("Extended testing")
 
