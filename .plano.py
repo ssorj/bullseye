@@ -27,6 +27,18 @@ def test_(passthrough_args=[]):
         run(["plano-test", "-m", "bullseye.tests"] + passthrough_args)
 
 @command
+def shellcheck():
+    check_program("shellcheck", "Install shellcheck")
+
+    with working_dir("test-project"):
+        with temp_file() as do_env, temp_file() as undo_env:
+            run("plano env", stdout=do_env)
+            run("plano env --undo", stdout=undo_env)
+
+            run(f"shellcheck --shell sh --enable all {do_env}")
+            run(f"shellcheck --shell sh --enable all {undo_env}")
+
+@command
 def coverage():
     """
     Analyze test coverage

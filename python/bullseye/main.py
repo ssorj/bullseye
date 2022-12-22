@@ -224,29 +224,29 @@ def env(undo=False):
     home_dir = join(project_dir, project.build_dir, project.name)
 
     if undo:
-        print("[[ ${0} ]] && export {1}=${2} && unset {3}".format(old_home_var, home_var, old_home_var, old_home_var))
-        print("[[ $OLD_PATH ]] && export PATH=$OLD_PATH && unset OLD_PATH")
-        print("[[ $OLD_PYTHONPATH ]] && export PYTHONPATH=$OLD_PYTHONPATH && unset OLD_PYTHONPATH")
+        print(f"[ -n \"${{{old_home_var}}}\" ] && export {home_var}=\"${{{old_home_var}}}\" && unset {old_home_var}")
+        print("[ -n \"${OLD_PATH}\" ] && export PATH=\"${OLD_PATH}\" && unset OLD_PATH")
+        print("[ -n \"${OLD_PYTHONPATH}\" ] && export PYTHONPATH=\"${OLD_PYTHONPATH}\" && unset OLD_PYTHONPATH")
 
         return
 
-    print("[[ ${0} ]] && export {1}=${2}".format(home_var, old_home_var, home_var))
-    print("[[ $PATH ]] && export OLD_PATH=$PATH")
-    print("[[ $PYTHONPATH ]] && export OLD_PYTHONPATH=$PYTHONPATH")
+    print(f"[ -n \"${{{home_var}}}\" ] && export {old_home_var}=\"${{{home_var}}}\"")
+    print("[ -n \"${PATH}\" ] && export OLD_PATH=\"${PATH}\"")
+    print("[ -n \"${PYTHONPATH}\" ] && export OLD_PYTHONPATH=\"${PYTHONPATH}\"")
 
-    print("export {0}={1}".format(home_var, home_dir))
+    print(f"export {home_var}=\"{home_dir}\"")
 
     path = [
         join(project_dir, project.build_dir, "bin"),
-        ENV.get("PATH", ""),
+        "${PATH}",
     ]
 
-    print("export PATH={0}".format(join_path_var(*path)))
+    print("export PATH=\"{}\"".format(join_path_var(*path)))
 
     python_path = [
         join(home_dir, project.source_dir),
         join(project_dir, project.source_dir),
-        ENV.get("PYTHONPATH", ""),
+        "${PYTHONPATH}",
     ]
 
-    print("export PYTHONPATH={0}".format(join_path_var(*python_path)))
+    print("export PYTHONPATH=\"{}\"".format(join_path_var(*python_path)))
